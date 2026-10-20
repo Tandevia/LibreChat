@@ -36,13 +36,13 @@ Nothing is built on the droplet.
 
 ## First admin
 
-The first person to sign in with Google becomes an ordinary user. Promote them:
+The first person to sign in with Google becomes an ordinary user. LibreChat has no
+script for roles; set it in MongoDB (role values: `USER`, `ADMIN`):
 
 ```bash
-docker compose exec api npm run set-role -- --email you@forscope.eu --role ADMIN
+docker compose exec mongodb mongosh LibreChat --quiet --eval \
+  'db.users.updateOne({ email: "you@forscope.eu" }, { $set: { role: "ADMIN" } })'
 ```
-
-(check `config/` in the repository for the current script names).
 
 ## Google OAuth client
 
