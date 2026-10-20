@@ -66,8 +66,13 @@ function AuthLayout({
         <div className="mt-6 h-10 w-full bg-cover">
           <img
             src="assets/logo.svg"
-            className="h-full w-full object-contain"
-            alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'LibreChat' })}
+            className="h-full w-full object-contain dark:hidden"
+            alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'Tandevia Workspace' })}
+          />
+          <img
+            src="assets/logo-dark.svg"
+            className="hidden h-full w-full object-contain dark:block"
+            alt=""
           />
         </div>
       </BlinkAnimation>

@@ -1,0 +1,57 @@
+# Tandevia Workspace on ai.forscope.eu (DigitalOcean droplet tandevia-gateway).
+#
+# The image comes from GitHub Actions (.github/workflows/tandevia-image.yml).
+# HTTPS is terminated by the Caddy that runs in the gateway stack
+# (/opt/tandevia-gateway/deploy/aigateway); it reaches this app over the shared
+# external network `edge` under the alias `workspace`. Secrets live in .env
+# next to this file (see README.md).
+name: workspace
+
+services:
+  api:
+    image: ghcr.io/tandevia/librechat:${WORKSPACE_IMAGE_TAG:-tandevia}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongodb:27017/LibreChat
+      MEILI_HOST: http://meilisearch:7700
+      LIBRECHAT_TEMP_CREDENTIALS_PATH: /app/data/.env.temp
+    volumes:
+      - ./librechat.yaml:/app/librechat.yaml:ro
+      - ./images:/app/client/public/images
+      - ./uploads:/app/uploads
+      - ./logs:/app/api/logs
+      - librechat-data:/app/data
+    networks:
+      default:
+      edge:
+        aliases:
+          - workspace
+    depends_on:
+      - mongodb
+      - meilisearch
+
+  mongodb:
+    image: mongo:8.0.20
+    restart: unless-stopped
+    command: mongod --noauth
+    volumes:
+      - ./data-node:/data/db
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.35.1
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - ./meili_data:/meili_data
+
+networks:
+  edge:
+    external: true
+
+volumes:
+  librechat-data:
