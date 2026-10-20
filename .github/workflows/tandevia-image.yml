@@ -1,13 +1,13 @@
 name: Tandevia Workspace image
 
-# Builds the rebranded LibreChat API image (client included) and pushes it to
-# ghcr.io/tandevia/librechat. The droplet behind ai.forscope.eu pulls it from
-# there; see deploy/ai.forscope.eu/README.md.
+# Builds the rebranded LibreChat API image (client included), pushes it to
+# ghcr.io/tandevia/librechat (private) and deploys it to the droplet behind
+# ai.forscope.eu: the deploy key there is bound to /usr/local/bin/deploy-workspace,
+# which pulls with the job's short-lived GITHUB_TOKEN. See deploy/ai.forscope.eu/README.md.
 on:
   push:
     branches: [tandevia]
     paths-ignore:
-      - 'deploy/**'
       - '**.md'
   workflow_dispatch:
 
@@ -62,3 +62,21 @@ jobs:
             BUILD_DATE=${{ steps.meta.outputs.date }}
           cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
           cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Deploy to ai.forscope.eu
+        env:
+          SSH_KEY: ${{ secrets.DROPLET_SSH_KEY }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' '104.248.43.141 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAtS01M2jZkpeloo1ERJsSYMvLs1VxstTfHUOFf5NrcO' > ~/.ssh/known_hosts
+          # The key's forced command ignores whatever is passed here and runs
+          # deploy-workspace, which reads the registry token from stdin.
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes root@104.248.43.141 deploy

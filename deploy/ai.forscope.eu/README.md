@@ -17,13 +17,22 @@ next to Tandevia Gateway.
 
 ## Deploy / update
 
+Automatic: every push to `tandevia` runs `.github/workflows/tandevia-image.yml`, which
+builds the image and then deploys it over SSH. The package on GHCR is private; the
+droplet pulls it with the job's short-lived `GITHUB_TOKEN`.
+
+On the droplet the deploy key (repo secret `DROPLET_SSH_KEY`) is bound in
+`/root/.ssh/authorized_keys` to the forced command `/usr/local/bin/deploy-workspace`:
+`git pull`, `docker login` with the token from stdin, `docker compose pull && up -d`,
+`docker logout`. The key can run nothing else.
+
+Manual (same thing, with a token that can read the package):
+
 ```bash
-cd /opt/tandevia-workspace && git pull
-cd deploy/ai.forscope.eu && docker compose pull && docker compose up -d
+echo "$GHCR_TOKEN" | ssh root@104.248.43.141 deploy-workspace
 ```
 
-Nothing is built on the droplet. A code change goes: push to `tandevia` → Actions builds
-the image → `docker compose pull && up -d` here.
+Nothing is built on the droplet.
 
 ## First admin
 
