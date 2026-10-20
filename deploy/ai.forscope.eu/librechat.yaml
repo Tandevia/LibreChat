@@ -1,0 +1,33 @@
+# Tandevia Workspace configuration for ai.forscope.eu.
+# Schema: https://www.librechat.ai/docs/configuration/librechat_yaml
+version: 1.3.17
+cache: true
+
+interface:
+  customWelcome: 'Welcome to Tandevia Workspace.'
+  privacyPolicy:
+    externalUrl: 'https://tandevia.com/privacy'
+    openNewTab: true
+  termsOfService:
+    externalUrl: 'https://tandevia.com/terms'
+    openNewTab: true
+
+registration:
+  # Sign-in is Google Workspace only; accounts outside these domains are refused.
+  socialLogins: ['google']
+  allowedDomains:
+    - 'forscope.eu'
+
+endpoints:
+  custom:
+    # Every model request goes through Tandevia Gateway, which holds the
+    # provider keys, applies the budget and logs the traffic.
+    - name: 'Tandevia Gateway'
+      apiKey: '${TANDEVIA_GATEWAY_KEY}'
+      baseURL: 'https://aigateway.forscope.eu/v1'
+      models:
+        default: ['openai/gpt-4o-mini']
+        fetch: true
+      titleConvo: true
+      titleModel: 'openai/gpt-4o-mini'
+      modelDisplayLabel: 'Tandevia Gateway'
