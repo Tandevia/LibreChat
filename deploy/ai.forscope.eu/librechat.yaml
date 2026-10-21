@@ -25,9 +25,38 @@ endpoints:
     - name: 'Tandevia Gateway'
       apiKey: '${TANDEVIA_GATEWAY_KEY}'
       baseURL: 'https://aigateway.forscope.eu/v1'
+      # Fixed list instead of fetch: the gateway also lists embeddings, TTS,
+      # transcription and legacy completion models (babbage-002 came first
+      # alphabetically and became the agent default: 400 Bad Request).
+      # The first entry is the default model.
       models:
-        default: ['openai/gpt-4o-mini']
-        fetch: true
+        default:
+          - 'openai/gpt-4o-mini'
+          - 'openai/gpt-4o'
+          - 'openai/gpt-4.1'
+          - 'openai/gpt-4.1-mini'
+          - 'openai/gpt-4.1-nano'
+          - 'openai/gpt-5'
+          - 'openai/gpt-5-mini'
+          - 'openai/gpt-5-nano'
+          - 'openai/gpt-5.1'
+          - 'openai/gpt-5.2'
+          - 'openai/gpt-5.4'
+          - 'openai/gpt-5.4-mini'
+          - 'openai/gpt-5.4-nano'
+          - 'openai/gpt-5.5'
+          - 'openai/gpt-5.6-luna'
+          - 'openai/gpt-5.6-sol'
+          - 'openai/gpt-5.6-terra'
+          - 'openai/gpt-6-astra'
+          - 'openai/gpt-6-luna'
+          - 'openai/gpt-6-sol'
+          - 'openai/gpt-6.1-sol'
+          - 'openai/o1'
+          - 'openai/o3'
+          - 'openai/o3-mini'
+          - 'openai/o4-mini'
+        fetch: false
       titleConvo: true
       titleModel: 'openai/gpt-4o-mini'
       modelDisplayLabel: 'Tandevia Gateway'
