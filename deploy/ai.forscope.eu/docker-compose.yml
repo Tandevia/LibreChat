@@ -1,10 +1,9 @@
 # Tandevia Workspace on ai.forscope.eu (DigitalOcean droplet tandevia-gateway).
 #
 # The image comes from GitHub Actions (.github/workflows/tandevia-image.yml).
-# HTTPS is terminated by the Caddy that runs in the gateway stack
-# (/opt/tandevia-gateway/deploy/aigateway); it reaches this app over the shared
-# external network `edge` under the alias `workspace`. Secrets live in .env
-# next to this file (see README.md).
+# Models and tools come from the Forscope gateway (gateway.forscope.eu), see
+# librechat.yaml. HTTPS is terminated by the Caddy below (Caddyfile next to
+# this file). Secrets live in .env next to this file (see README.md).
 name: workspace
 
 services:
@@ -24,11 +23,6 @@ services:
       - ./uploads:/app/uploads
       - ./logs:/app/api/logs
       - librechat-data:/app/data
-    networks:
-      default:
-      edge:
-        aliases:
-          - workspace
     depends_on:
       - mongodb
       - meilisearch
@@ -49,9 +43,20 @@ services:
     volumes:
       - ./meili_data:/meili_data
 
-networks:
-  edge:
-    external: true
+  # HTTPS on 80/443 with a Let's Encrypt certificate kept in ./caddy.
+  caddy:
+    image: caddy:2.11.6
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    depends_on:
+      - api
 
 volumes:
   librechat-data:

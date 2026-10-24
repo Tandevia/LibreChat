@@ -1,7 +1,7 @@
 # ai.forscope.eu
 
-Tandevia Workspace on the DigitalOcean droplet `tandevia-gateway` (fra1, project Tandevia),
-next to Tandevia Gateway.
+Tandevia Workspace on the DigitalOcean droplet `tandevia-gateway` (fra1, project Tandevia).
+Models (and, once switched on, tools) come from the Forscope gateway, `gateway.forscope.eu`.
 
 | what | where |
 |---|---|
@@ -10,9 +10,9 @@ next to Tandevia Gateway.
 | image | `ghcr.io/tandevia/librechat:tandevia`, built by GitHub Actions on every push to `tandevia` |
 | data | `data-node/` (MongoDB), `meili_data/` (search index), `uploads/`, `images/` |
 | secrets | `.env` (mode 600, never committed); copies in the macOS Keychain, service `ai.forscope.eu` |
-| HTTPS | Caddy in the gateway stack, site `ai.forscope.eu` → `workspace:3080` over the `edge` network |
+| HTTPS | Caddy in this stack (`caddy` service, `Caddyfile`), certificate in `caddy/` |
 | DNS | Cloudflare, zone forscope.eu: `A ai → 104.248.43.141`, DNS only (grey cloud) |
-| models | all through Tandevia Gateway (`librechat.yaml`), with the virtual key `TANDEVIA_GATEWAY_KEY` |
+| models | all through `gateway.forscope.eu` (`librechat.yaml`) as the application "LibreChat (ai.forscope.eu)", key `TANDEVIA_GATEWAY_KEY`; the signed-in person's e-mail goes in `x-onesam-user`, so their role, budget and security policy apply there |
 | sign-in | Google Workspace only, domains listed in `librechat.yaml` → `registration.allowedDomains` |
 
 ## Deploy / update
@@ -52,3 +52,9 @@ Google Cloud Console → APIs & Services → Credentials → OAuth client ID, ty
 - Authorised redirect URI: `https://ai.forscope.eu/oauth/google/callback`
 
 Put the client ID and secret into `.env`.
+
+## History
+
+Until 2026-10-24 the models came from a Bifrost-based gateway on this droplet
+(`aigateway.forscope.eu`, Tandevia/bifrost), whose stack also ran Caddy. It was
+switched off on Jakub's word; LibreChat now uses the Forscope gateway and runs its own Caddy.

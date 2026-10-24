@@ -1,0 +1,11 @@
+{
+	email j.sulak@forscope.eu
+}
+
+# Tandevia Workspace (LibreChat). Streaming answers must not be buffered.
+ai.forscope.eu {
+	encode zstd gzip
+	reverse_proxy api:3080 {
+		flush_interval -1
+	}
+}

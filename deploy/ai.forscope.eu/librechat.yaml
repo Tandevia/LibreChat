@@ -17,46 +17,37 @@ registration:
   socialLogins: ['google']
   allowedDomains:
     - 'forscope.eu'
-
 endpoints:
   custom:
-    # Every model request goes through Tandevia Gateway, which holds the
-    # provider keys, applies the budget and logs the traffic.
+    # Every model request goes through the Tandevia gateway of Forscope
+    # (gateway.forscope.eu), as the application "LibreChat (ai.forscope.eu)".
+    # The gateway holds the provider keys, applies the person's role, budget
+    # and security policy, and logs the traffic.
     - name: 'Tandevia Gateway'
       apiKey: '${TANDEVIA_GATEWAY_KEY}'
-      baseURL: 'https://aigateway.forscope.eu/v1'
-      # Fixed list instead of fetch: the gateway also lists embeddings, TTS,
-      # transcription and legacy completion models (babbage-002 came first
-      # alphabetically and became the agent default: 400 Bad Request).
-      # The first entry is the default model.
+      baseURL: 'https://gateway.forscope.eu/v1'
+      # Who is asking: the signed-in person, by e-mail. The gateway trusts this
+      # application to name them (allow_user_assertion) and then judges the
+      # request on their role. LibreChat's own `user` (its internal id) is
+      # dropped: the gateway reads that field first and would find nobody.
+      headers:
+        x-onesam-user: '{{LIBRECHAT_USER_EMAIL}}'
+      dropParams: ['user']
+      # Fixed list: what the application may use and every role at Forscope
+      # allows, then what only Admins may use (others get "no access").
+      # The first entry is the default: "auto" lets the gateway pick a model
+      # the person may use, by how hard the question is.
       models:
         default:
-          - 'openai/gpt-4o-mini'
-          - 'openai/gpt-4o'
-          - 'openai/gpt-4.1'
-          - 'openai/gpt-4.1-mini'
-          - 'openai/gpt-4.1-nano'
-          - 'openai/gpt-5'
-          - 'openai/gpt-5-mini'
-          - 'openai/gpt-5-nano'
-          - 'openai/gpt-5.1'
-          - 'openai/gpt-5.2'
-          - 'openai/gpt-5.4'
-          - 'openai/gpt-5.4-mini'
-          - 'openai/gpt-5.4-nano'
-          - 'openai/gpt-5.5'
-          - 'openai/gpt-5.6-luna'
-          - 'openai/gpt-5.6-sol'
-          - 'openai/gpt-5.6-terra'
-          - 'openai/gpt-6-astra'
-          - 'openai/gpt-6-luna'
-          - 'openai/gpt-6-sol'
-          - 'openai/gpt-6.1-sol'
-          - 'openai/o1'
-          - 'openai/o3'
-          - 'openai/o3-mini'
-          - 'openai/o4-mini'
+          - 'auto'
+          - 'gpt-5.6-sol'
+          - 'gemini-3.5-flash'
+          - 'gemini-2.5-flash'
+          - 'gpt-5.4-nano'
+          - 'claude-sonnet-5'
+          - 'claude-opus-5'
+          - 'gemini-3.1-flash-lite'
         fetch: false
       titleConvo: true
-      titleModel: 'openai/gpt-4o-mini'
+      titleModel: 'gpt-5.4-nano'
       modelDisplayLabel: 'Tandevia Gateway'
